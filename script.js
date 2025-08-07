@@ -11,7 +11,7 @@ let settings = {
     theme: 'dark'
 };
 let currentUser = null;
-let users = {};
+let users = [];
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 let dashboardStats = {
@@ -32,6 +32,8 @@ let dailyExpensesChart = null;
 
 // API Base URL
 const API_BASE_URL = 'http://127.0.0.1:5014/api';
+
+
 
 // API Helper Functions
 async function apiRequest(endpoint, options = {}) {
@@ -83,8 +85,57 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 100);
     
     // Add form event listeners
-    document.getElementById('loginForm').addEventListener('submit', handleLogin);
-    document.getElementById('registerForm').addEventListener('submit', handleRegister);
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    
+    console.log('Login form found:', loginForm);
+    console.log('Register form found:', registerForm);
+    
+    if (loginForm) {
+        try {
+            loginForm.addEventListener('submit', handleLogin);
+            console.log('Login form event listener attached successfully');
+        } catch (error) {
+            console.error('Error attaching login form event listener:', error);
+        }
+    } else {
+        console.error('Login form not found!');
+    }
+    
+    if (registerForm) {
+        try {
+            registerForm.addEventListener('submit', handleRegister);
+            console.log('Register form event listener attached successfully');
+        } catch (error) {
+            console.error('Error attaching register form event listener:', error);
+        }
+    } else {
+        console.error('Register form not found!');
+    }
+    
+    // Add click handlers for login/register buttons
+    const loginBtn = document.getElementById('loginButton');
+    const registerBtn = document.getElementById('registerButton');
+    
+    console.log('Login button found:', loginBtn);
+    console.log('Register button found:', registerBtn);
+    
+    // Add click handlers to the buttons
+    if (loginBtn) {
+        loginBtn.addEventListener('click', function(e) {
+            console.log('Login button clicked via event listener');
+            handleLoginClick();
+        });
+        console.log('Login button event listener attached');
+    }
+    
+    if (registerBtn) {
+        registerBtn.addEventListener('click', function(e) {
+            console.log('Register button clicked via event listener');
+            handleRegisterClick();
+        });
+        console.log('Register button event listener attached');
+    }
     
     const transactionForm = document.getElementById('transactionForm');
     console.log('Transaction form element:', transactionForm);
@@ -255,6 +306,8 @@ function saveData() {
 
 // Navigation
 function showSection(sectionId) {
+    console.log('=== showSection called with:', sectionId, '===');
+    
     // Hide all sections
     document.querySelectorAll('.section').forEach(section => {
         section.classList.remove('active');
@@ -266,10 +319,22 @@ function showSection(sectionId) {
     });
     
     // Show selected section
-    document.getElementById(sectionId).classList.add('active');
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+        targetSection.classList.add('active');
+        console.log('Section activated:', sectionId);
+    } else {
+        console.error('Section not found:', sectionId);
+    }
     
-    // Add active class to clicked nav link
-    event.target.classList.add('active');
+    // Add active class to corresponding nav link
+    const navLink = document.querySelector(`[onclick="showSection('${sectionId}')"]`);
+    if (navLink) {
+        navLink.classList.add('active');
+        console.log('Nav link activated for:', sectionId);
+    } else {
+        console.error('Nav link not found for:', sectionId);
+    }
     
     // Update content based on section
     if (sectionId === 'transactions') {
@@ -1470,15 +1535,30 @@ function formatDate(dateString) {
 }
 
 function showNotification(message, type = 'success') {
+    console.log('=== showNotification called ===');
+    console.log('Message:', message);
+    console.log('Type:', type);
+    
     const notification = document.getElementById('notification');
     const notificationText = document.getElementById('notificationText');
+    
+    console.log('Notification element:', notification);
+    console.log('Notification text element:', notificationText);
+    
+    if (!notification || !notificationText) {
+        console.error('Notification elements not found!');
+        return;
+    }
     
     notificationText.textContent = message;
     notification.className = `notification ${type}`;
     notification.classList.add('show');
     
+    console.log('Notification shown with class:', notification.className);
+    
     setTimeout(() => {
         notification.classList.remove('show');
+        console.log('Notification hidden');
     }, 3000);
 }
 
@@ -1545,13 +1625,57 @@ function showUnauthenticatedUI() {
     `;
 }
 
+function handleLoginClick() {
+    console.log('=== handleLoginClick function called ===');
+    console.log('Button clicked at:', new Date().toISOString());
+    
+    // Get form values
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    
+    console.log('Login attempt:', { email, password });
+    console.log('Available users:', users);
+    
+    // Validate form
+    if (!email || !password) {
+        showNotification('Please fill in all fields', 'error');
+        return;
+    }
+    
+    const user = users.find(u => u.email === email && u.password === password);
+    console.log('Found user:', user);
+    
+    if (user) {
+        currentUser = user;
+        saveData();
+        closeModal('loginModal');
+        showAuthenticatedUI();
+        loadUserData();
+        updateDashboard();
+        showNotification('Login successful! Please refresh the page to access your dashboard.', 'success');
+        alert('Login successful! Please refresh the page to access your dashboard.');
+        console.log('=== Login successful ===');
+        
+        // Don't auto-refresh, let user manually refresh
+        console.log('Waiting for user to refresh page...');
+    } else {
+        showNotification('Invalid email or password', 'error');
+        console.log('=== Login failed - invalid credentials ===');
+    }
+}
+
 function handleLogin(e) {
+    console.log('=== handleLogin function called ===');
     e.preventDefault();
     
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
     
+    console.log('Login attempt:', { email, password });
+    console.log('Available users:', users);
+    
     const user = users.find(u => u.email === email && u.password === password);
+    console.log('Found user:', user);
     
     if (user) {
         currentUser = user;
@@ -1561,30 +1685,51 @@ function handleLogin(e) {
         loadUserData();
         updateDashboard();
         showNotification('Login successful!');
+        console.log('=== Login successful ===');
+        
+        // Automatically navigate to dashboard after login
+        setTimeout(() => {
+            showSection('dashboard');
+        }, 100);
     } else {
         showNotification('Invalid email or password', 'error');
+        console.log('=== Login failed - invalid credentials ===');
     }
 }
 
-function handleRegister(e) {
-    e.preventDefault();
+function handleRegisterClick() {
+    console.log('=== handleRegisterClick function called ===');
+    console.log('Button clicked at:', new Date().toISOString());
     
+    // Get form values
     const email = document.getElementById('registerEmail').value;
     const password = document.getElementById('registerPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
     
+    console.log('Registration attempt:', { email, password, confirmPassword });
+    console.log('Current users before registration:', users);
+    
+    // Validate form
+    if (!email || !password || !confirmPassword) {
+        showNotification('Please fill in all fields', 'error');
+        return;
+    }
+    
     if (password !== confirmPassword) {
         showNotification('Passwords do not match', 'error');
+        console.log('=== Registration failed - passwords do not match ===');
         return;
     }
     
     if (password.length < 6) {
         showNotification('Password must be at least 6 characters long', 'error');
+        console.log('=== Registration failed - password too short ===');
         return;
     }
     
     if (users.find(u => u.email === email)) {
         showNotification('User with this email already exists', 'error');
+        console.log('=== Registration failed - user already exists ===');
         return;
     }
     
@@ -1595,6 +1740,62 @@ function handleRegister(e) {
         createdAt: new Date().toISOString()
     };
     
+    console.log('Creating new user:', newUser);
+    
+    users.push(newUser);
+    currentUser = newUser;
+    saveData();
+    closeModal('registerModal');
+    showAuthenticatedUI();
+    showOnboardingWizard();
+            showNotification('Registration successful! Please refresh the page to access your settings.', 'success');
+        alert('Registration successful! Please refresh the page to access your settings.');
+        
+        console.log('Users after registration:', users);
+        console.log('=== Registration successful ===');
+        
+        // Don't auto-refresh, let user manually refresh
+        console.log('Waiting for user to refresh page...');
+}
+
+function handleRegister(e) {
+    console.log('=== handleRegister function called ===');
+    e.preventDefault();
+    
+    const email = document.getElementById('registerEmail').value;
+    const password = document.getElementById('registerPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    console.log('Registration attempt:', { email, password, confirmPassword });
+    console.log('Current users before registration:', users);
+    
+    if (password !== confirmPassword) {
+        showNotification('Passwords do not match', 'error');
+        console.log('=== Registration failed - passwords do not match ===');
+        return;
+    }
+    
+    if (password.length < 6) {
+        showNotification('Password must be at least 6 characters long', 'error');
+        console.log('=== Registration failed - password too short ===');
+        return;
+    }
+    
+    if (users.find(u => u.email === email)) {
+        showNotification('User with this email already exists', 'error');
+        console.log('=== Registration failed - user already exists ===');
+        return;
+    }
+    
+    const newUser = {
+        id: Date.now(),
+        email: email,
+        password: password,
+        createdAt: new Date().toISOString()
+    };
+    
+    console.log('Creating new user:', newUser);
+    
     users.push(newUser);
     currentUser = newUser;
     saveData();
@@ -1602,6 +1803,14 @@ function handleRegister(e) {
     showAuthenticatedUI();
     showOnboardingWizard();
     showNotification('Registration successful!');
+    
+    console.log('Users after registration:', users);
+    console.log('=== Registration successful ===');
+    
+    // Automatically navigate to settings after registration
+    setTimeout(() => {
+        showSection('settings');
+    }, 100);
 }
 
 function logout() {
@@ -1796,14 +2005,17 @@ function initializeBudgetManagement() {
     const totalBudgetInput = document.getElementById('totalBudgetInput');
     const totalBudgetField = document.getElementById('totalBudgetField');
     
-    if (budgetType === 'dollar') {
-        totalBudgetInput.style.display = 'block';
-        // Load saved total budget value
-        if (settings.totalBudget) {
-            totalBudgetField.value = settings.totalBudget;
+    // Only proceed if the elements exist (we're on the settings page)
+    if (totalBudgetInput && totalBudgetField) {
+        if (budgetType === 'dollar') {
+            totalBudgetInput.style.display = 'block';
+            // Load saved total budget value
+            if (settings.totalBudget) {
+                totalBudgetField.value = settings.totalBudget;
+            }
+        } else {
+            totalBudgetInput.style.display = 'none';
         }
-    } else {
-        totalBudgetInput.style.display = 'none';
     }
     
     generateBudgetInputs();
@@ -1880,6 +2092,13 @@ function loadSelectedCategories() {
 
 function generateBudgetInputs() {
     const budgetSettings = document.getElementById('budgetSettings');
+    
+    // Check if we're on the settings page
+    if (!budgetSettings) {
+        console.log('Budget settings element not found, skipping budget inputs generation');
+        return;
+    }
+    
     const budgetType = settings.budgetType || document.querySelector('input[name="budgetType"]:checked')?.value || 'dollar';
     
     if (!settings.selectedCategories || settings.selectedCategories.length === 0) {
@@ -2012,6 +2231,12 @@ function updateBudgetSummary() {
     const remainingBudgetAmount = document.getElementById('remainingBudgetAmount');
     const totalBudgetField = document.getElementById('totalBudgetField');
     
+    // Check if we're on the settings page
+    if (!totalBudgetLabel || !totalBudgetAmount || !remainingBudgetLabel || !remainingBudgetAmount) {
+        console.log('Budget summary elements not found, skipping budget summary update');
+        return;
+    }
+    
     let total = 0;
     let allocated = 0;
     
@@ -2081,6 +2306,12 @@ function updateBudgetProgressBars() {
     const budgetType = settings.budgetType || document.querySelector('input[name="budgetType"]:checked')?.value || 'dollar';
     
     console.log('updateBudgetProgressBars - budgetType:', budgetType, 'settings.budgetType:', settings.budgetType);
+    
+    // Check if we're on the dashboard page
+    if (!container) {
+        console.log('Budget progress container not found, skipping budget progress update');
+        return;
+    }
     
     if (!settings.selectedCategories || settings.selectedCategories.length === 0) {
         container.innerHTML = '<p>No budget categories selected. Go to Settings to configure your budget.</p>';
@@ -3033,4 +3264,6 @@ function updateThemeButtons(theme) {
         lightBtn.classList.toggle('active', theme === 'light');
     }
 }
+
+
 
