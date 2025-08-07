@@ -288,6 +288,9 @@ function loadData() {
     // Update transaction categories to only show selected categories
     updateTransactionCategories();
     
+    // Generate recurring transactions
+    generateRecurringTransactions();
+    
     // Chat history will be loaded when the financial-questions section is shown
 }
 
@@ -668,7 +671,6 @@ function addTransaction() {
     if (isRecurring) {
         const frequency = document.getElementById('recurringFrequency').value;
         const endDate = document.getElementById('recurringEndDate').value;
-        const autoConfirm = document.getElementById('autoConfirm').checked;
         const customDates = document.getElementById('customDates').value;
         
         if (!frequency) {
@@ -688,14 +690,15 @@ function addTransaction() {
             notes,
             attributes,
             frequency,
+            startDate: date, // Add start date
             endDate: endDate || null,
-            autoConfirm,
             customDates: frequency === 'custom' ? customDates.split(',').map(d => d.trim()) : null,
             nextDueDate: calculateNextDueDate({
                 frequency,
                 endDate: endDate || null,
                 customDates: frequency === 'custom' ? customDates.split(',').map(d => d.trim()) : null
-            }, parseDate(date)).toISOString().split('T')[0]
+            }, parseDate(date)).toISOString().split('T')[0],
+            lastGeneratedDate: date // Track when we last generated transactions
         };
         
         if (!settings.recurringTransactions) {
@@ -716,6 +719,9 @@ function addTransaction() {
     displayAllTransactions();
     updateBudgetProgressBars();
     updateCharts();
+    
+    // Generate any new recurring transactions
+    generateRecurringTransactions();
     
     // Reset form
     resetTransactionForm();
@@ -1891,6 +1897,9 @@ function loadUserData() {
     // Update transaction categories to only show selected categories
     updateTransactionCategories();
     
+    // Generate recurring transactions
+    generateRecurringTransactions();
+    
     // Chat history will be loaded when the financial-questions section is shown
 }
 
@@ -2380,55 +2389,72 @@ function generateRecurringTransactions() {
     const currentDate = new Date();
     const recurringTransactions = settings.recurringTransactions || [];
     
+    // Clean up old pending transactions that are more than 30 days old
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    transactions = transactions.filter(t => {
+        if (t.status === 'pending') {
+            const transactionDate = parseDate(t.date);
+            if (transactionDate && transactionDate < thirtyDaysAgo) {
+                console.log('Removing old pending transaction:', t.name, t.date);
+                return false; // Remove old pending transactions
+            }
+        }
+        return true;
+    });
+    
     recurringTransactions.forEach(recurring => {
+        // Only generate transactions if we haven't already generated them today
+        const today = new Date().toISOString().split('T')[0];
+        if (recurring.lastGeneratedDate === today) {
+            return; // Already generated today, skip
+        }
+        
+        // Get the next due date for this recurring transaction
         const nextDueDate = parseDate(recurring.nextDueDate);
         
-        // Check if transaction is due today or overdue
-        if (nextDueDate <= currentDate) {
-            // Check if we already have a pending transaction for this recurring
-            const existingPending = transactions.find(t => 
+        // Only generate if the transaction is due today or overdue
+        if (nextDueDate && nextDueDate <= currentDate) {
+            // Check if we already have a transaction for this date (pending or confirmed)
+            const existingTransaction = transactions.find(t => 
                 t.recurringId === recurring.id && 
-                t.status === 'pending' && 
                 parseDate(t.date).toDateString() === nextDueDate.toDateString()
             );
             
-            if (!existingPending) {
-                // Create pending transaction
-                const pendingTransaction = {
+            if (!existingTransaction) {
+                // Create pending transaction for this date
+                const newTransaction = {
                     id: Date.now() + Math.random(),
                     name: recurring.name,
-                    amount: recurring.amount,
+                    amount: recurring.type === 'expense' ? -Math.abs(recurring.amount) : Math.abs(recurring.amount),
                     type: recurring.type,
                     category: recurring.category,
                     date: nextDueDate.toISOString().split('T')[0],
                     notes: recurring.notes,
                     attributes: recurring.attributes,
                     status: 'pending',
-                    recurringId: recurring.id,
-                    autoConfirm: recurring.autoConfirm
+                    recurringId: recurring.id
                 };
                 
-                transactions.push(pendingTransaction);
-                
-                // Auto-confirm if enabled
-                if (recurring.autoConfirm) {
-                    pendingTransaction.status = 'confirmed';
-                    pendingTransaction.date = new Date().toISOString().split('T')[0];
-                }
-                
-                // Calculate next due date
-                const nextDate = calculateNextDueDate(recurring, nextDueDate);
-                if (nextDate) {
-                    recurring.nextDueDate = nextDate.toISOString().split('T')[0];
-                } else {
-                    // Remove recurring transaction if it has ended
-                    const recurringIndex = settings.recurringTransactions.findIndex(r => r.id === recurring.id);
-                    if (recurringIndex !== -1) {
-                        settings.recurringTransactions.splice(recurringIndex, 1);
-                    }
+                transactions.push(newTransaction);
+            }
+            
+            // Calculate next due date
+            const nextDate = calculateNextDueDate(recurring, nextDueDate);
+            if (nextDate) {
+                recurring.nextDueDate = nextDate.toISOString().split('T')[0];
+            } else {
+                // Remove recurring transaction if it has ended
+                const recurringIndex = settings.recurringTransactions.findIndex(r => r.id === recurring.id);
+                if (recurringIndex !== -1) {
+                    settings.recurringTransactions.splice(recurringIndex, 1);
                 }
             }
         }
+        
+        // Mark as generated today
+        recurring.lastGeneratedDate = today;
     });
     
     saveData();
@@ -2511,7 +2537,17 @@ function updatePendingRecurringDisplay() {
     const pendingList = document.getElementById('pendingRecurringList');
     const pendingModalList = document.getElementById('pendingRecurringModalList');
     
-    const pendingTransactions = transactions.filter(t => t.status === 'pending');
+    // Only show pending transactions that are actually due (not future dates)
+    const currentDate = new Date();
+    const pendingTransactions = transactions.filter(t => {
+        if (t.status !== 'pending') return false;
+        
+        const transactionDate = parseDate(t.date);
+        if (!transactionDate) return false;
+        
+        // Only show transactions that are due today or overdue
+        return transactionDate <= currentDate;
+    });
     
     if (pendingTransactions.length > 0) {
         pendingSection.style.display = 'block';
@@ -2787,7 +2823,7 @@ function getMonthlyTransactions() {
         const transactionDate = parseDate(t.date);
         return transactionDate.getMonth() === currentMonth && 
                transactionDate.getFullYear() === currentYear &&
-               t.status !== 'pending';
+               (t.status === 'confirmed' || t.status === undefined); // Include confirmed and legacy transactions
     });
 }
 
@@ -2804,7 +2840,7 @@ function getPreviousMonthTransactions() {
         const transactionDate = parseDate(t.date);
         return transactionDate.getMonth() === prevMonth && 
                transactionDate.getFullYear() === prevYear &&
-               t.status !== 'pending';
+               (t.status === 'confirmed' || t.status === undefined); // Include confirmed and legacy transactions
     });
 }
 

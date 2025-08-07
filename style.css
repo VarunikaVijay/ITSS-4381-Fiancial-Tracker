@@ -1425,6 +1425,10 @@ body::before {
     margin-bottom: 1rem;
 }
 
+.pending-recurring .section-header h3 {
+    color: #000000 !important;
+}
+
 .pending-list {
     display: flex;
     flex-direction: column;
@@ -1453,13 +1457,13 @@ body::before {
 
 .pending-title {
     font-weight: 600;
-    color: #92400e;
+    color: #000000;
     margin-bottom: 0.25rem;
 }
 
 .pending-details {
     font-size: 0.875rem;
-    color: #a16207;
+    color: #000000;
 }
 
 .pending-amount {
