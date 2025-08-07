@@ -2437,6 +2437,7 @@ function generateRecurringTransactions() {
                     recurringId: recurring.id
                 };
                 
+                console.log('Creating pending transaction:', newTransaction);
                 transactions.push(newTransaction);
             }
             
@@ -2518,6 +2519,7 @@ function confirmPendingTransaction(transactionId) {
         transaction.date = new Date().toISOString().split('T')[0];
         saveData();
         updateDashboard();
+        updatePendingRecurringDisplay(); // Update the pending display
         showNotification('Transaction confirmed successfully!');
     }
 }
@@ -2528,6 +2530,7 @@ function deletePendingTransaction(transactionId) {
         transactions.splice(transactionIndex, 1);
         saveData();
         updateDashboard();
+        updatePendingRecurringDisplay(); // Update the pending display
         showNotification('Pending transaction deleted successfully!');
     }
 }
@@ -2536,6 +2539,10 @@ function updatePendingRecurringDisplay() {
     const pendingSection = document.getElementById('pendingRecurringSection');
     const pendingList = document.getElementById('pendingRecurringList');
     const pendingModalList = document.getElementById('pendingRecurringModalList');
+    
+    // Debug: Log all transactions to see what we have
+    console.log('All transactions:', transactions);
+    console.log('Pending transactions:', transactions.filter(t => t.status === 'pending'));
     
     // Only show pending transactions that are actually due (not future dates)
     const currentDate = new Date();
@@ -2548,6 +2555,10 @@ function updatePendingRecurringDisplay() {
         // Only show transactions that are due today or overdue
         return transactionDate <= currentDate;
     });
+    
+    console.log('Filtered pending transactions:', pendingTransactions);
+    console.log('Income pending transactions:', pendingTransactions.filter(t => t.type === 'income'));
+    console.log('Expense pending transactions:', pendingTransactions.filter(t => t.type === 'expense'));
     
     if (pendingTransactions.length > 0) {
         pendingSection.style.display = 'block';
