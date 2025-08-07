@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceTracker</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1>🚀 $pace Tracker</h1>
+            </div>
+            <div class="nav-menu">
+                <a href="#" class="nav-link active" onclick="showSection('dashboard')">Mission Control</a>
+                <a href="#" class="nav-link" onclick="showSection('transactions')">Missions</a>
+                <a href="#" class="nav-link" onclick="showSection('financial-questions')">AI Chat</a>
+                <a href="#" class="nav-link" onclick="showSection('settings')">Settings</a>
+                <div id="auth-buttons">
+                    <button class="btn-secondary" onclick="openModal('loginModal')">Login</button>
+                    <button class="btn-primary" onclick="openModal('registerModal')">Register</button>
+                </div>
+                <div id="user-menu" style="display: none;">
+                                            <span id="user-email" style="margin-right: 1rem; color: var(--text-secondary);"></span>
+                    <button class="btn-secondary" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+        <main class="main-content">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section active">
+    <div class="container">
+                <div class="section-header">
+                    <h2>🚀 Mission Control</h2>
+                    <p>Welcome back, Space Explorer! Here's your financial mission overview.</p>
+                    <div class="month-selector">
+                        <button class="btn-icon" onclick="changeMonth(-1)">←</button>
+                        <span id="currentMonthDisplay">August 2025</span>
+                        <button class="btn-icon" onclick="changeMonth(1)">→</button>
+                    </div>
+                </div>
+                
+
+                
+                <!-- Summary Cards -->
+                <div class="summary-grid" id="summaryGrid">
+                    <div class="summary-card" data-stat="totalSpent">
+                        <div class="summary-icon">🪐</div>
+                        <div class="summary-content">
+                            <h3>Monthly Fuel Consumption</h3>
+                            <p class="summary-amount" id="totalSpent">$0.00</p>
+                        </div>
+                    </div>
+                    <div class="summary-card" data-stat="totalIncome">
+                        <div class="summary-icon">⭐</div>
+                        <div class="summary-content">
+                            <h3>Stellar Income</h3>
+                            <p class="summary-amount" id="totalIncome">$0.00</p>
+                        </div>
+                    </div>
+                    <div class="summary-card" data-stat="netBalance">
+                        <div class="summary-icon">🌌</div>
+                        <div class="summary-content">
+                            <h3>Orbital Balance</h3>
+                            <p class="summary-amount" id="netBalance">$0.00</p>
+                        </div>
+                    </div>
+                    <div class="summary-card" data-stat="totalTransactions">
+                        <div class="summary-icon">🛸</div>
+                        <div class="summary-content">
+                            <h3>Mission Logs</h3>
+                            <p class="summary-amount" id="totalTransactions">0</p>
+                        </div>
+                    </div>
+                    <div class="summary-card" data-stat="averageTransaction">
+                        <div class="summary-icon">🌠</div>
+                        <div class="summary-content">
+                            <h3>Avg Mission Cost</h3>
+                            <p class="summary-amount" id="averageTransaction">$0.00</p>
+                        </div>
+                    </div>
+                    <div class="summary-card" data-stat="mostCommonCategory">
+                        <div class="summary-icon">🌟</div>
+                        <div class="summary-content">
+                            <h3>Primary Sector</h3>
+                            <p class="summary-amount" id="mostCommonCategory">-</p>
+                        </div>
+                    </div>
+                    <div class="summary-card" data-stat="highestSpendingCategory">
+                        <div class="summary-icon">☄️</div>
+                        <div class="summary-content">
+                            <h3>Critical Sector</h3>
+                            <p class="summary-amount" id="highestSpendingCategory">-</p>
+                        </div>
+                    </div>
+                    <div class="summary-card" data-stat="largestTransaction">
+                        <div class="summary-icon">💫</div>
+                        <div class="summary-content">
+                            <h3>Major Mission</h3>
+                            <p class="summary-amount" id="largestTransaction">$0.00</p>
+                        </div>
+                    </div>
+                    <div class="summary-card" data-stat="totalYearSpending">
+                        <div class="summary-icon">🌍</div>
+                        <div class="summary-content">
+                            <h3>Annual Mission Budget</h3>
+                            <p class="summary-amount" id="totalYearSpending">$0.00</p>
+                        </div>
+                    </div>
+                </div>
+                
+
+                
+                <!-- Budget Progress Bars -->
+                <div class="budget-progress-section">
+                    <h3>🚀 Mission Resource Allocation</h3>
+                    <div class="budget-progress-container" id="budgetProgressContainer">
+                        <!-- Budget progress bars will be dynamically generated -->
+                    </div>
+                </div>
+                
+                <!-- Charts Row -->
+                <div class="charts-row">
+                    <div class="charts-left-column">
+                        <div class="chart-container daily-expenses-chart">
+                            <h3>Daily Mission Logs</h3>
+                            <canvas id="dailyExpensesChart"></canvas>
+                </div>
+                        <div class="spending-insights-section">
+                            <div class="spending-insights-card">
+                                <div class="spending-insights-header">
+                                    <h3>🌌 Mission Intelligence</h3>
+                                    <button class="btn-icon" onclick="refreshInsights()">🔄</button>
+                                </div>
+                                <div class="spending-insights-content" id="spendingInsights">
+                                    <p>Loading insights...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                                            <div class="chart-container">
+                            <h3>Mission Sector Analysis</h3>
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Pending Recurring Transactions -->
+                <div class="pending-recurring" id="pendingRecurringSection" style="display: none;">
+                    <div class="section-header">
+                        <h3>🔄 Scheduled Missions</h3>
+                        <button class="btn-secondary" onclick="openModal('pendingRecurringModal')">Manage All</button>
+                    </div>
+                    <div class="pending-list" id="pendingRecurringList">
+                        <!-- Pending recurring transactions will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="recent-transactions">
+                    <div class="section-header">
+                        <h3>Recent Mission Logs</h3>
+                        <button class="btn-secondary" onclick="showSection('transactions')">View All</button>
+                    </div>
+                    <div class="transactions-list" id="recentTransactionsList">
+                        <!-- Transactions will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Transactions Section -->
+        <section id="transactions" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Mission Log Archive</h2>
+                    <div class="header-actions">
+                        <button class="btn-primary" onclick="openModal('addTransactionModal')">+ Log Mission</button>
+                    </div>
+                    </div>
+                    
+                <!-- Filter Controls -->
+                <div class="filter-controls">
+                    <div class="filter-group">
+                        <label for="filterStartDate">Start Date:</label>
+                        <input type="date" id="filterStartDate" onchange="applyFilters()">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterEndDate">End Date:</label>
+                        <input type="date" id="filterEndDate" onchange="applyFilters()">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterCategory">Filter by Category:</label>
+                        <select id="filterCategory" onchange="applyFilters()">
+                            <option value="">All Categories</option>
+                            <option value="bills">Bills</option>
+                            <option value="entertainment">Entertainment</option>
+                            <option value="healthcare">Healthcare</option>
+                            <option value="groceries">Groceries</option>
+                            <option value="education">Education</option>
+                            <option value="gifts">Gifts & Donations</option>
+                            <option value="personal-care">Personal Care</option>
+                            <option value="home-maintenance">Home Maintenance</option>
+                            <option value="childcare">Childcare</option>
+                            <option value="petcare">Petcare</option>
+                            <option value="savings">Savings & Investments</option>
+                            <option value="transportation">Transportation</option>
+                            <option value="shopping">Shopping</option>
+                            <option value="food">Food & Dining</option>
+                            <option value="travel">Travel</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <button class="btn-secondary" onclick="clearFilters()">Clear Filters</button>
+                    </div>
+                </div>
+
+                <div class="transactions-container">
+                    <div class="transactions-list" id="allTransactionsList">
+                        <!-- All transactions will be populated here -->
+                    </div>
+                    </div>
+                </div>
+            </section>
+
+
+
+        <!-- Settings Section -->
+        <section id="settings" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Settings</h2>
+                    <p>Customize your financial tracking experience.</p>
+                    </div>
+                    
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h3>Category Selection</h3>
+                        <p>Double-click to select/deselect categories for transaction tracking</p>
+                        <div class="category-cards" id="categoryCards">
+                            <div class="category-card" data-category="bills" onclick="toggleCategory(this)">
+                                <div class="category-icon">🏠</div>
+                                <div class="category-name">Bills</div>
+                            </div>
+                            <div class="category-card" data-category="entertainment" onclick="toggleCategory(this)">
+                                <div class="category-icon">🎬</div>
+                                <div class="category-name">Entertainment</div>
+                            </div>
+                            <div class="category-card" data-category="healthcare" onclick="toggleCategory(this)">
+                                <div class="category-icon">🏥</div>
+                                <div class="category-name">Healthcare</div>
+                            </div>
+                            <div class="category-card" data-category="groceries" onclick="toggleCategory(this)">
+                                <div class="category-icon">🛒</div>
+                                <div class="category-name">Groceries</div>
+                            </div>
+                            <div class="category-card" data-category="education" onclick="toggleCategory(this)">
+                                <div class="category-icon">📚</div>
+                                <div class="category-name">Education</div>
+                            </div>
+                            <div class="category-card" data-category="gifts" onclick="toggleCategory(this)">
+                                <div class="category-icon">🎁</div>
+                                <div class="category-name">Gifts & Donations</div>
+                            </div>
+                            <div class="category-card" data-category="personal-care" onclick="toggleCategory(this)">
+                                <div class="category-icon">💅</div>
+                                <div class="category-name">Personal Care</div>
+                            </div>
+                            <div class="category-card" data-category="home-maintenance" onclick="toggleCategory(this)">
+                                <div class="category-icon">🔧</div>
+                                <div class="category-name">Home Maintenance</div>
+                            </div>
+                            <div class="category-card" data-category="childcare" onclick="toggleCategory(this)">
+                                <div class="category-icon">👶</div>
+                                <div class="category-name">Childcare</div>
+                            </div>
+                            <div class="category-card" data-category="petcare" onclick="toggleCategory(this)">
+                                <div class="category-icon">🐾</div>
+                                <div class="category-name">Petcare</div>
+                            </div>
+                            <div class="category-card" data-category="savings" onclick="toggleCategory(this)">
+                                <div class="category-icon">💰</div>
+                                <div class="category-name">Savings & Investments</div>
+                            </div>
+                            <div class="category-card" data-category="transportation" onclick="toggleCategory(this)">
+                                <div class="category-icon">🚗</div>
+                                <div class="category-name">Transportation</div>
+                            </div>
+                            <div class="category-card" data-category="shopping" onclick="toggleCategory(this)">
+                                <div class="category-icon">🛍️</div>
+                                <div class="category-name">Shopping</div>
+                            </div>
+                            <div class="category-card" data-category="food" onclick="toggleCategory(this)">
+                                <div class="category-icon">🍽️</div>
+                                <div class="category-name">Food & Dining</div>
+                            </div>
+                            <div class="category-card" data-category="travel" onclick="toggleCategory(this)">
+                                <div class="category-icon">✈️</div>
+                                <div class="category-name">Travel</div>
+                            </div>
+                            <div class="category-card" data-category="other" onclick="toggleCategory(this)">
+                                <div class="category-icon">📝</div>
+                                <div class="category-name">Other</div>
+                            </div>
+                    </div>
+                </div>
+
+                    <div class="settings-card">
+                        <h3>Mission Resource Allocation</h3>
+                        <div class="budget-type-toggle">
+                            <label>
+                                <input type="radio" name="budgetType" value="dollar" checked onchange="toggleBudgetType()">
+                                Dollar Amounts
+                            </label>
+                            <label>
+                                <input type="radio" name="budgetType" value="percentage" onchange="toggleBudgetType()">
+                                Percentages
+                            </label>
+                    </div>
+                        
+                        <div class="total-budget-input" id="totalBudgetInput">
+                            <label for="totalBudgetField">Mission Budget:</label>
+                            <input type="number" id="totalBudgetField" class="input-field" placeholder="Enter total budget" min="0" step="0.01" onchange="updateBudgetSummary()">
+                    </div>
+                        
+                        <div class="budget-summary">
+                            <div class="total-budget-display">
+                                <span id="totalBudgetLabel">Mission Budget:</span>
+                                <span id="totalBudgetAmount">$0</span>
+                </div>
+                            <div class="remaining-budget">
+                                <span id="remainingBudgetLabel">Fuel Remaining:</span>
+                                <span id="remainingBudgetAmount">$0</span>
+                    </div>
+                </div>
+
+                        <div class="budget-settings" id="budgetSettings">
+                            <!-- Budget inputs will be dynamically generated -->
+                    </div>
+                        
+                        <button class="btn-primary" onclick="saveBudgetSettings()">Save Mission Settings</button>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>Mission Control Customization</h3>
+                        <p>Select which mission data to display on your control panel:</p>
+                        <div class="dashboard-stats-grid">
+                            <label class="stat-toggle">
+                                <input type="checkbox" id="showTotalSpent" checked onchange="toggleDashboardStat('totalSpent')">
+                                <span>Monthly Fuel Consumption</span>
+                            </label>
+                            <label class="stat-toggle">
+                                <input type="checkbox" id="showTotalIncome" checked onchange="toggleDashboardStat('totalIncome')">
+                                <span>Stellar Income</span>
+                            </label>
+                            <label class="stat-toggle">
+                                <input type="checkbox" id="showNetBalance" checked onchange="toggleDashboardStat('netBalance')">
+                                <span>Orbital Balance</span>
+                            </label>
+                            <label class="stat-toggle">
+                                <input type="checkbox" id="showTotalTransactions" checked onchange="toggleDashboardStat('totalTransactions')">
+                                <span>Mission Logs</span>
+                            </label>
+                            <label class="stat-toggle">
+                                <input type="checkbox" id="showAverageTransaction" checked onchange="toggleDashboardStat('averageTransaction')">
+                                <span>Average Mission Cost</span>
+                            </label>
+                            <label class="stat-toggle">
+                                <input type="checkbox" id="showMostCommonCategory" checked onchange="toggleDashboardStat('mostCommonCategory')">
+                                <span>Primary Sector</span>
+                            </label>
+                            <label class="stat-toggle">
+                                <input type="checkbox" id="showHighestSpendingCategory" checked onchange="toggleDashboardStat('highestSpendingCategory')">
+                                <span>Critical Sector</span>
+                            </label>
+                            <label class="stat-toggle">
+                                <input type="checkbox" id="showLargestTransaction" checked onchange="toggleDashboardStat('largestTransaction')">
+                                <span>Major Mission</span>
+                            </label>
+                            <label class="stat-toggle">
+                                <input type="checkbox" id="showTotalYearSpending" checked onchange="toggleDashboardStat('totalYearSpending')">
+                                <span>Annual Mission Budget</span>
+                            </label>
+                    </div>
+                        <button class="btn-primary" onclick="saveDashboardSettings()">Save Control Panel Settings</button>
+                </div>
+
+                    <div class="settings-card">
+                        <h3>Preferences</h3>
+                        <div class="preference-item">
+                            <label>Currency</label>
+                            <select id="currencySelect" class="select-input" onchange="updateCurrencyDisplay()">
+                                <option value="USD">USD ($)</option>
+                                <option value="EUR">EUR (€)</option>
+                                <option value="GBP">GBP (£)</option>
+                                <option value="CAD">CAD (C$)</option>
+                                <option value="AUD">AUD (A$)</option>
+                            </select>
+                    </div>
+                        <div class="preference-item">
+                            <label>
+                                <input type="checkbox" id="notificationsEnabled" checked>
+                                Enable notifications
+                            </label>
+                    </div>
+                        <div class="preference-item">
+                            <label>
+                                <input type="checkbox" id="autoCategorize" checked>
+                                Auto-categorize transactions
+                            </label>
+                </div>
+                        <div class="preference-item">
+                            <label>Theme</label>
+                            <div class="theme-selector">
+                                <button type="button" class="theme-option" onclick="setTheme('dark')" id="darkThemeBtn">
+                                    🌙 Dark Mode
+                                </button>
+                                <button type="button" class="theme-option" onclick="setTheme('light')" id="lightThemeBtn">
+                                    ☀️ Light Mode
+                                </button>
+                            </div>
+                </div>
+                        <button class="btn-primary" onclick="savePreferences()">Save Preferences</button>
+                    </div>
+                    </div>
+                </div>
+            </section>
+
+        <!-- Financial Questions Section -->
+        <section id="financial-questions" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>🤖 Financial Questions</h2>
+                    <p>Ask me anything about finance, budgeting, and money management!</p>
+                    <button class="btn-secondary" onclick="clearChatHistory()" style="margin-top: 1rem; font-size: 0.9rem; padding: 0.5rem 1rem;">
+                        🗑️ Clear Chat History
+                    </button>
+                    </div>
+
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message bot-message">
+                            <div class="message-content">
+                                <div class="message-avatar">🤖</div>
+                                <div class="message-text">
+                                    <p>Hello! I'm your AI financial assistant. I can help you with:</p>
+                                    <ul>
+                                        <li>Budgeting strategies and tips</li>
+                                        <li>Investment advice and planning</li>
+                                        <li>Debt management and credit</li>
+                                        <li>Tax planning and optimization</li>
+                                        <li>Financial goal setting</li>
+                                        <li>And much more!</li>
+                                    </ul>
+                                    <p>What would you like to know about today?</p>
+                    </div>
+                            </div>
+                    </div>
+                </div>
+
+                    <div class="chat-input-container">
+                        <form id="chatForm" class="chat-form">
+                            <div class="chat-input-wrapper">
+                                <input type="text" id="chatInput" placeholder="Ask me anything about finance..." required>
+                                <button type="submit" class="chat-send-btn">
+                                    <span>Send</span>
+                                    <span class="send-icon">➤</span>
+                                </button>
+                    </div>
+                        </form>
+                    </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Login</h2>
+                <button class="close-btn" onclick="closeModal('loginModal')">&times;</button>
+                    </div>
+            <form id="loginForm" class="modal-form">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required>
+                    </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('loginModal')">Cancel</button>
+                    <button type="submit" class="btn-primary">Login</button>
+                </div>
+                <div class="form-footer">
+                    <p>Don't have an account? <a href="#" onclick="switchToRegister()">Register here</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Register</h2>
+                <button class="close-btn" onclick="closeModal('registerModal')">&times;</button>
+            </div>
+            <form id="registerForm" class="modal-form">
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" required minlength="6">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('registerModal')">Cancel</button>
+                    <button type="submit" class="btn-primary">Register</button>
+                </div>
+                <div class="form-footer">
+                    <p>Already have an account? <a href="#" onclick="switchToLogin()">Login here</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Transaction Modal -->
+    <div id="addTransactionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Transaction</h2>
+                <button class="close-btn" onclick="closeModal('addTransactionModal')">&times;</button>
+            </div>
+            <form id="transactionForm" class="modal-form">
+                <div class="form-group">
+                    <label for="transactionName">Transaction Name</label>
+                    <input type="text" id="transactionName" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="transactionAmount">Amount</label>
+                        <input type="number" id="transactionAmount" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="transactionType">Type</label>
+                        <select id="transactionType" required>
+                            <option value="expense">Expense</option>
+                            <option value="income">Income</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" id="categoryFormGroup">
+                    <label for="transactionCategory">Category</label>
+                    <select id="transactionCategory" onchange="showCategoryAttributes()">
+                        <option value="">Select Category</option>
+                        <option value="bills">Bills</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="healthcare">Healthcare</option>
+                        <option value="groceries">Groceries</option>
+                        <option value="education">Education</option>
+                        <option value="gifts">Gifts & Donations</option>
+                        <option value="personal-care">Personal Care</option>
+                        <option value="home-maintenance">Home Maintenance</option>
+                        <option value="childcare">Childcare</option>
+                        <option value="petcare">Petcare</option>
+                        <option value="savings">Savings & Investments</option>
+                        <option value="transportation">Transportation</option>
+                        <option value="shopping">Shopping</option>
+                        <option value="food">Food & Dining</option>
+                        <option value="travel">Travel</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <!-- Dynamic Category Attributes -->
+                <div id="categoryAttributes" style="display: none;">
+                    <!-- Bills Attributes -->
+                    <div id="billsAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="billsProvider">Service Provider</label>
+                                <input type="text" id="billsProvider" placeholder="e.g., Electric Company, Internet Provider">
+                            </div>
+                            <div class="form-group">
+                                <label for="billsDueDate">Due Date</label>
+                                <input type="date" id="billsDueDate">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Entertainment Attributes -->
+                    <div id="entertainmentAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="entertainmentType">Entertainment Type</label>
+                                <select id="entertainmentType">
+                                    <option value="">Select Type</option>
+                                    <option value="movies">Movies</option>
+                                    <option value="concerts">Concerts</option>
+                                    <option value="sports">Sports Events</option>
+                                    <option value="games">Gaming</option>
+                                    <option value="hobbies">Hobbies</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="entertainmentLocation">Location</label>
+                                <input type="text" id="entertainmentLocation" placeholder="e.g., Movie Theater, Stadium">
+                            </div>
+                        </div>
+    </div>
+
+                    <!-- Healthcare Attributes -->
+                    <div id="healthcareAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="healthcareProvider">Healthcare Provider</label>
+                                <input type="text" id="healthcareProvider" placeholder="e.g., Doctor, Hospital, Pharmacy">
+                            </div>
+                            <div class="form-group">
+                                <label for="healthcareType">Service Type</label>
+                                <select id="healthcareType">
+                                    <option value="">Select Type</option>
+                                    <option value="consultation">Consultation</option>
+                                    <option value="medication">Medication</option>
+                                    <option value="procedure">Medical Procedure</option>
+                                    <option value="insurance">Insurance</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+    </div>
+
+                    <!-- Groceries Attributes -->
+                    <div id="groceriesAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="groceriesStore">Store Name</label>
+                                <input type="text" id="groceriesStore" placeholder="e.g., Walmart, Whole Foods">
+                            </div>
+                            <div class="form-group">
+                                <label for="groceriesType">Grocery Type</label>
+                                <select id="groceriesType">
+                                    <option value="">Select Type</option>
+                                    <option value="fresh">Fresh Produce</option>
+                                    <option value="dairy">Dairy</option>
+                                    <option value="meat">Meat & Seafood</option>
+                                    <option value="pantry">Pantry Items</option>
+                                    <option value="frozen">Frozen Foods</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Education Attributes -->
+                    <div id="educationAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="educationInstitution">Institution</label>
+                                <input type="text" id="educationInstitution" placeholder="e.g., University, Online Course">
+                            </div>
+                            <div class="form-group">
+                                <label for="educationType">Education Type</label>
+                                <select id="educationType">
+                                    <option value="">Select Type</option>
+                                    <option value="tuition">Tuition</option>
+                                    <option value="books">Books & Supplies</option>
+                                    <option value="course">Online Course</option>
+                                    <option value="workshop">Workshop</option>
+                                    <option value="certification">Certification</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gifts & Donations Attributes -->
+                    <div id="giftsAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="giftsRecipient">Recipient</label>
+                                <input type="text" id="giftsRecipient" placeholder="e.g., Friend, Charity, Family">
+                            </div>
+                            <div class="form-group">
+                                <label for="giftsOccasion">Occasion</label>
+                                <select id="giftsOccasion">
+                                    <option value="">Select Occasion</option>
+                                    <option value="birthday">Birthday</option>
+                                    <option value="wedding">Wedding</option>
+                                    <option value="holiday">Holiday</option>
+                                    <option value="anniversary">Anniversary</option>
+                                    <option value="charity">Charity Donation</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Personal Care Attributes -->
+                    <div id="personal-careAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="personalCareType">Care Type</label>
+                                <select id="personalCareType">
+                                    <option value="">Select Type</option>
+                                    <option value="haircut">Haircut/Styling</option>
+                                    <option value="spa">Spa/Massage</option>
+                                    <option value="cosmetics">Cosmetics</option>
+                                    <option value="gym">Gym/Fitness</option>
+                                    <option value="skincare">Skincare</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="personalCareProvider">Provider</label>
+                                <input type="text" id="personalCareProvider" placeholder="e.g., Salon, Spa, Gym">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Home Maintenance Attributes -->
+                    <div id="home-maintenanceAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="homeMaintenanceType">Maintenance Type</label>
+                                <select id="homeMaintenanceType">
+                                    <option value="">Select Type</option>
+                                    <option value="repair">Repair</option>
+                                    <option value="improvement">Improvement</option>
+                                    <option value="cleaning">Cleaning</option>
+                                    <option value="furniture">Furniture</option>
+                                    <option value="appliances">Appliances</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="homeMaintenanceArea">Area</label>
+                                <input type="text" id="homeMaintenanceArea" placeholder="e.g., Kitchen, Bathroom, Living Room">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Childcare Attributes -->
+                    <div id="childcareAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="childcareType">Childcare Type</label>
+                                <select id="childcareType">
+                                    <option value="">Select Type</option>
+                                    <option value="daycare">Daycare</option>
+                                    <option value="babysitter">Babysitter</option>
+                                    <option value="school">School Fees</option>
+                                    <option value="activities">Activities</option>
+                                    <option value="supplies">Supplies</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="childcareProvider">Provider</label>
+                                <input type="text" id="childcareProvider" placeholder="e.g., Daycare Center, Babysitter Name">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Petcare Attributes -->
+                    <div id="petcareAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="petcareType">Pet Care Type</label>
+                                <select id="petcareType">
+                                    <option value="">Select Type</option>
+                                    <option value="veterinary">Veterinary</option>
+                                    <option value="grooming">Grooming</option>
+                                    <option value="food">Pet Food</option>
+                                    <option value="toys">Toys & Supplies</option>
+                                    <option value="boarding">Boarding</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="petcareProvider">Provider</label>
+                                <input type="text" id="petcareProvider" placeholder="e.g., Vet Clinic, Pet Store">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Savings/Investments Attributes -->
+                    <div id="savingsAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="savingsType">Savings Type</label>
+                                <select id="savingsType">
+                                    <option value="">Select Type</option>
+                                    <option value="emergency">Emergency Fund</option>
+                                    <option value="retirement">Retirement</option>
+                                    <option value="investment">Investment</option>
+                                    <option value="vacation">Vacation Fund</option>
+                                    <option value="goal">Goal Savings</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="savingsInstitution">Financial Institution</label>
+                                <input type="text" id="savingsInstitution" placeholder="e.g., Bank, Investment Platform">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transportation Attributes -->
+                    <div id="transportationAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="transportationType">Transportation Type</label>
+                                <select id="transportationType">
+                                    <option value="">Select Type</option>
+                                    <option value="fuel">Fuel</option>
+                                    <option value="public">Public Transit</option>
+                                    <option value="ride-share">Ride Share</option>
+                                    <option value="maintenance">Maintenance</option>
+                                    <option value="parking">Parking</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="transportationProvider">Provider</label>
+                                <input type="text" id="transportationProvider" placeholder="e.g., Gas Station, Uber, Metro">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shopping Attributes -->
+                    <div id="shoppingAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="shoppingType">Shopping Type</label>
+                                <select id="shoppingType">
+                                    <option value="">Select Type</option>
+                                    <option value="clothing">Clothing</option>
+                                    <option value="electronics">Electronics</option>
+                                    <option value="home">Home & Garden</option>
+                                    <option value="books">Books</option>
+                                    <option value="jewelry">Jewelry</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="shoppingStore">Store</label>
+                                <input type="text" id="shoppingStore" placeholder="e.g., Amazon, Target, Local Store">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Food & Dining Attributes -->
+                    <div id="foodAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="foodType">Dining Type</label>
+                                <select id="foodType">
+                                    <option value="">Select Type</option>
+                                    <option value="restaurant">Restaurant</option>
+                                    <option value="fast-food">Fast Food</option>
+                                    <option value="cafe">Cafe</option>
+                                    <option value="delivery">Food Delivery</option>
+                                    <option value="takeout">Takeout</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="foodRestaurant">Restaurant/Place</label>
+                                <input type="text" id="foodRestaurant" placeholder="e.g., McDonald's, Local Cafe">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Travel Attributes -->
+                    <div id="travelAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="travelType">Travel Type</label>
+                                <select id="travelType">
+                                    <option value="">Select Type</option>
+                                    <option value="accommodation">Accommodation</option>
+                                    <option value="transportation">Transportation</option>
+                                    <option value="activities">Activities</option>
+                                    <option value="food">Food & Dining</option>
+                                    <option value="souvenirs">Souvenirs</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="travelDestination">Destination</label>
+                                <input type="text" id="travelDestination" placeholder="e.g., New York, Paris, Beach Resort">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="transactionDate">Date</label>
+                    <input type="date" id="transactionDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="transactionNotes">Notes (Optional)</label>
+                    <textarea id="transactionNotes" rows="3"></textarea>
+                </div>
+
+                <!-- Recurring Transaction Settings -->
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="isRecurring" onchange="toggleRecurringSettings()">
+                        Make this a recurring transaction
+                    </label>
+                </div>
+
+                <div id="recurringSettings" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="recurringFrequency">Frequency</label>
+                            <select id="recurringFrequency">
+                                <option value="">Select Frequency</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="biweekly">Bi-weekly</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="custom">Custom Dates</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="recurringEndDate">End Date (Optional)</label>
+                            <input type="date" id="recurringEndDate">
+                        </div>
+                    </div>
+                    
+                    <div id="customDatesContainer" style="display: none;">
+                        <div class="form-group">
+                            <label for="customDates">Custom Dates (comma-separated, MM-DD format)</label>
+                            <input type="text" id="customDates" placeholder="e.g., 01-15, 02-15, 03-15">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="autoConfirm">
+                            Auto-confirm future transactions (for reliable payments like rent)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('addTransactionModal')">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Transaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Transaction Modal -->
+    <div id="editTransactionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Transaction</h2>
+                <button class="close-btn" onclick="closeModal('editTransactionModal')">&times;</button>
+            </div>
+            <form id="editTransactionForm" class="modal-form">
+                <input type="hidden" id="editTransactionId">
+                
+                <div class="form-group">
+                    <label for="editTransactionName">Transaction Name</label>
+                    <input type="text" id="editTransactionName" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editTransactionAmount">Amount</label>
+                        <input type="number" id="editTransactionAmount" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editTransactionType">Type</label>
+                        <select id="editTransactionType" required>
+                            <option value="expense">Expense</option>
+                            <option value="income">Income</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="editTransactionCategory">Category</label>
+                    <select id="editTransactionCategory" required>
+                        <option value="">Select Category</option>
+                        <option value="bills">Bills</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="healthcare">Healthcare</option>
+                        <option value="groceries">Groceries</option>
+                        <option value="education">Education</option>
+                        <option value="gifts">Gifts & Donations</option>
+                        <option value="personal-care">Personal Care</option>
+                        <option value="home-maintenance">Home Maintenance</option>
+                        <option value="childcare">Childcare</option>
+                        <option value="petcare">Petcare</option>
+                        <option value="savings">Savings & Investments</option>
+                        <option value="transportation">Transportation</option>
+                        <option value="shopping">Shopping</option>
+                        <option value="food">Food & Dining</option>
+                        <option value="travel">Travel</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <!-- Dynamic Category Attributes for Edit -->
+                <div id="editCategoryAttributes" style="display: none;">
+                    <!-- Bills Attributes -->
+                    <div id="editBillsAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editBillsProvider">Service Provider</label>
+                                <input type="text" id="editBillsProvider" placeholder="e.g., Electric Company, Internet Provider">
+                            </div>
+                            <div class="form-group">
+                                <label for="editBillsDueDate">Due Date</label>
+                                <input type="date" id="editBillsDueDate">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Entertainment Attributes -->
+                    <div id="editEntertainmentAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editEntertainmentType">Entertainment Type</label>
+                                <select id="editEntertainmentType">
+                                    <option value="">Select Type</option>
+                                    <option value="movies">Movies</option>
+                                    <option value="concerts">Concerts</option>
+                                    <option value="sports">Sports Events</option>
+                                    <option value="games">Gaming</option>
+                                    <option value="hobbies">Hobbies</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editEntertainmentLocation">Location</label>
+                                <input type="text" id="editEntertainmentLocation" placeholder="e.g., Movie Theater, Stadium">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Healthcare Attributes -->
+                    <div id="editHealthcareAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editHealthcareProvider">Healthcare Provider</label>
+                                <input type="text" id="editHealthcareProvider" placeholder="e.g., Doctor, Hospital, Pharmacy">
+                            </div>
+                            <div class="form-group">
+                                <label for="editHealthcareType">Service Type</label>
+                                <select id="editHealthcareType">
+                                    <option value="">Select Type</option>
+                                    <option value="consultation">Consultation</option>
+                                    <option value="medication">Medication</option>
+                                    <option value="procedure">Medical Procedure</option>
+                                    <option value="insurance">Insurance</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Groceries Attributes -->
+                    <div id="editGroceriesAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editGroceriesStore">Store Name</label>
+                                <input type="text" id="editGroceriesStore" placeholder="e.g., Walmart, Whole Foods">
+                            </div>
+                            <div class="form-group">
+                                <label for="editGroceriesType">Grocery Type</label>
+                                <select id="editGroceriesType">
+                                    <option value="">Select Type</option>
+                                    <option value="fresh">Fresh Produce</option>
+                                    <option value="dairy">Dairy</option>
+                                    <option value="meat">Meat & Seafood</option>
+                                    <option value="pantry">Pantry Items</option>
+                                    <option value="frozen">Frozen Foods</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Education Attributes -->
+                    <div id="editEducationAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editEducationInstitution">Institution</label>
+                                <input type="text" id="editEducationInstitution" placeholder="e.g., University, Online Course">
+                            </div>
+                            <div class="form-group">
+                                <label for="editEducationType">Education Type</label>
+                                <select id="editEducationType">
+                                    <option value="">Select Type</option>
+                                    <option value="tuition">Tuition</option>
+                                    <option value="books">Books & Supplies</option>
+                                    <option value="course">Online Course</option>
+                                    <option value="workshop">Workshop</option>
+                                    <option value="certification">Certification</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gifts & Donations Attributes -->
+                    <div id="editGiftsAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editGiftsRecipient">Recipient</label>
+                                <input type="text" id="editGiftsRecipient" placeholder="e.g., Friend, Charity, Family">
+                            </div>
+                            <div class="form-group">
+                                <label for="editGiftsOccasion">Occasion</label>
+                                <select id="editGiftsOccasion">
+                                    <option value="">Select Occasion</option>
+                                    <option value="birthday">Birthday</option>
+                                    <option value="wedding">Wedding</option>
+                                    <option value="holiday">Holiday</option>
+                                    <option value="anniversary">Anniversary</option>
+                                    <option value="charity">Charity Donation</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Personal Care Attributes -->
+                    <div id="editPersonal-careAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editPersonalCareType">Care Type</label>
+                                <select id="editPersonalCareType">
+                                    <option value="">Select Type</option>
+                                    <option value="haircut">Haircut/Styling</option>
+                                    <option value="spa">Spa/Massage</option>
+                                    <option value="cosmetics">Cosmetics</option>
+                                    <option value="gym">Gym/Fitness</option>
+                                    <option value="skincare">Skincare</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editPersonalCareProvider">Provider</label>
+                                <input type="text" id="editPersonalCareProvider" placeholder="e.g., Salon, Spa, Gym">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Home Maintenance Attributes -->
+                    <div id="editHome-maintenanceAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editHomeMaintenanceType">Maintenance Type</label>
+                                <select id="editHomeMaintenanceType">
+                                    <option value="">Select Type</option>
+                                    <option value="repair">Repair</option>
+                                    <option value="improvement">Improvement</option>
+                                    <option value="cleaning">Cleaning</option>
+                                    <option value="furniture">Furniture</option>
+                                    <option value="appliances">Appliances</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editHomeMaintenanceArea">Area</label>
+                                <input type="text" id="editHomeMaintenanceArea" placeholder="e.g., Kitchen, Bathroom, Living Room">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Childcare Attributes -->
+                    <div id="editChildcareAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editChildcareType">Childcare Type</label>
+                                <select id="editChildcareType">
+                                    <option value="">Select Type</option>
+                                    <option value="daycare">Daycare</option>
+                                    <option value="babysitter">Babysitter</option>
+                                    <option value="school">School Fees</option>
+                                    <option value="activities">Activities</option>
+                                    <option value="supplies">Supplies</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editChildcareProvider">Provider</label>
+                                <input type="text" id="editChildcareProvider" placeholder="e.g., Daycare Center, Babysitter Name">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Petcare Attributes -->
+                    <div id="editPetcareAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editPetcareType">Pet Care Type</label>
+                                <select id="editPetcareType">
+                                    <option value="">Select Type</option>
+                                    <option value="veterinary">Veterinary</option>
+                                    <option value="grooming">Grooming</option>
+                                    <option value="food">Pet Food</option>
+                                    <option value="toys">Toys & Supplies</option>
+                                    <option value="boarding">Boarding</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editPetcareProvider">Provider</label>
+                                <input type="text" id="editPetcareProvider" placeholder="e.g., Vet Clinic, Pet Store">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Savings/Investments Attributes -->
+                    <div id="editSavingsAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editSavingsType">Savings Type</label>
+                                <select id="editSavingsType">
+                                    <option value="">Select Type</option>
+                                    <option value="emergency">Emergency Fund</option>
+                                    <option value="retirement">Retirement</option>
+                                    <option value="investment">Investment</option>
+                                    <option value="vacation">Vacation Fund</option>
+                                    <option value="goal">Goal Savings</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editSavingsInstitution">Financial Institution</label>
+                                <input type="text" id="editSavingsInstitution" placeholder="e.g., Bank, Investment Platform">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transportation Attributes -->
+                    <div id="editTransportationAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editTransportationType">Transportation Type</label>
+                                <select id="editTransportationType">
+                                    <option value="">Select Type</option>
+                                    <option value="fuel">Fuel</option>
+                                    <option value="public">Public Transit</option>
+                                    <option value="ride-share">Ride Share</option>
+                                    <option value="maintenance">Maintenance</option>
+                                    <option value="parking">Parking</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editTransportationProvider">Provider</label>
+                                <input type="text" id="editTransportationProvider" placeholder="e.g., Gas Station, Uber, Metro">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shopping Attributes -->
+                    <div id="editShoppingAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editShoppingType">Shopping Type</label>
+                                <select id="editShoppingType">
+                                    <option value="">Select Type</option>
+                                    <option value="clothing">Clothing</option>
+                                    <option value="electronics">Electronics</option>
+                                    <option value="home">Home & Garden</option>
+                                    <option value="books">Books</option>
+                                    <option value="jewelry">Jewelry</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editShoppingStore">Store</label>
+                                <input type="text" id="editShoppingStore" placeholder="e.g., Amazon, Target, Local Store">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Food & Dining Attributes -->
+                    <div id="editFoodAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editFoodType">Dining Type</label>
+                                <select id="editFoodType">
+                                    <option value="">Select Type</option>
+                                    <option value="restaurant">Restaurant</option>
+                                    <option value="fast-food">Fast Food</option>
+                                    <option value="cafe">Cafe</option>
+                                    <option value="delivery">Food Delivery</option>
+                                    <option value="takeout">Takeout</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editFoodRestaurant">Restaurant/Place</label>
+                                <input type="text" id="editFoodRestaurant" placeholder="e.g., McDonald's, Local Cafe">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Travel Attributes -->
+                    <div id="editTravelAttributes" class="category-attributes" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editTravelType">Travel Type</label>
+                                <select id="editTravelType">
+                                    <option value="">Select Type</option>
+                                    <option value="accommodation">Accommodation</option>
+                                    <option value="transportation">Transportation</option>
+                                    <option value="activities">Activities</option>
+                                    <option value="food">Food & Dining</option>
+                                    <option value="souvenirs">Souvenirs</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editTravelDestination">Destination</label>
+                                <input type="text" id="editTravelDestination" placeholder="e.g., New York, Paris, Beach Resort">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="editTransactionDate">Date</label>
+                    <input type="date" id="editTransactionDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="editTransactionNotes">Notes (Optional)</label>
+                    <textarea id="editTransactionNotes" rows="3"></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('editTransactionModal')">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pending Recurring Transactions Modal -->
+    <div id="pendingRecurringModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔄 Pending Recurring Transactions</h2>
+                <span class="close" onclick="closeModal('pendingRecurringModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="pending-recurring-container" id="pendingRecurringModalList">
+                    <!-- Pending recurring transactions will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <span id="notificationText"></span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
+
