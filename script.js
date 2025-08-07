@@ -1742,20 +1742,19 @@ function handleRegisterClick() {
     
     console.log('Creating new user:', newUser);
     
-    users.push(newUser);
+        users.push(newUser);
     currentUser = newUser;
     saveData();
     closeModal('registerModal');
     showAuthenticatedUI();
-    showOnboardingWizard();
-            showNotification('Registration successful! Please refresh the page to access your settings.', 'success');
-        alert('Registration successful! Please refresh the page to access your settings.');
-        
-        console.log('Users after registration:', users);
-        console.log('=== Registration successful ===');
-        
-        // Don't auto-refresh, let user manually refresh
-        console.log('Waiting for user to refresh page...');
+    showNotification('Registration successful! Please refresh the page to access your settings.', 'success');
+    alert('Registration successful! Please refresh the page to access your settings.');
+    
+    console.log('Users after registration:', users);
+    console.log('=== Registration successful ===');
+    
+    // Don't auto-refresh, let user manually refresh
+    console.log('Waiting for user to refresh page...');
 }
 
 function handleRegister(e) {
@@ -1902,91 +1901,7 @@ function saveUserData() {
     saveChatHistory(); // Save chat history when user data is saved
 }
 
-function showOnboardingWizard() {
-    // Simple onboarding - could be expanded with a multi-step wizard
-    const onboardingHTML = `
-        <div class="container" style="text-align: center; padding-top: 2rem;">
-            <div style="max-width: 600px; margin: 0 auto;">
-                        <h2 style="font-size: 2rem; margin-bottom: 1rem; color: var(--text-primary);">Welcome to FinanceTracker!</h2>
-        <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2rem;">
-                    Let's set up your account with some default settings.
-                </p>
-                <div style="background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
-                    <h3 style="margin-bottom: 1.5rem;">Quick Setup</h3>
-                    <div style="display: grid; gap: 1rem; margin-bottom: 2rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <label>Currency:</label>
-                            <select id="onboardingCurrency" class="select-input" style="width: 150px;">
-                                <option value="USD">USD ($)</option>
-                                <option value="EUR">EUR (€)</option>
-                                <option value="GBP">GBP (£)</option>
-                            </select>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <label>Monthly Food Budget:</label>
-                            <input type="number" id="onboardingFoodBudget" class="budget-input" value="500">
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <label>Monthly Transportation Budget:</label>
-                            <input type="number" id="onboardingTransportBudget" class="budget-input" value="300">
-                        </div>
-                    </div>
-                    <button class="btn-primary" onclick="completeOnboarding()">Complete Setup</button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.querySelector('.main-content').innerHTML = onboardingHTML;
-}
 
-function completeOnboarding() {
-    // Save onboarding settings
-    settings.currency = document.getElementById('onboardingCurrency').value;
-    
-    // Initialize default categories and budgets
-    settings.selectedCategories = ['food', 'transportation', 'entertainment', 'shopping', 'bills', 'groceries'];
-    settings.budgets = {
-        food: parseFloat(document.getElementById('onboardingFoodBudget').value) || 500,
-        transportation: parseFloat(document.getElementById('onboardingTransportBudget').value) || 300,
-        entertainment: 200,
-        shopping: 400,
-        bills: 300,
-        groceries: 400
-    };
-    
-    // Initialize budget values storage for both types
-    settings.budgetValues = {
-        dollar: {
-            food: parseFloat(document.getElementById('onboardingFoodBudget').value) || 500,
-            transportation: parseFloat(document.getElementById('onboardingTransportBudget').value) || 300,
-            entertainment: 200,
-            shopping: 400,
-            bills: 300,
-            groceries: 400
-        },
-        percentage: {
-            food: 25,
-            transportation: 15,
-            entertainment: 10,
-            shopping: 20,
-            bills: 15,
-            groceries: 15
-        }
-    };
-    
-    // Set default total budget (sum of all category budgets)
-    const totalBudget = Object.values(settings.budgets).reduce((sum, budget) => sum + budget, 0);
-    settings.totalBudget = totalBudget;
-    
-    // Set default budget type
-    settings.budgetType = 'dollar';
-    
-    saveUserData();
-    
-    // Restore main app interface
-    location.reload();
-}
 
 // Budget Management Functions
 function initializeBudgetManagement() {
