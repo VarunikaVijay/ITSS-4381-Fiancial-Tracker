@@ -2405,16 +2405,31 @@ function generateRecurringTransactions() {
     });
     
     recurringTransactions.forEach(recurring => {
-        // Only generate transactions if we haven't already generated them today
-        const today = new Date().toISOString().split('T')[0];
-        if (recurring.lastGeneratedDate === today) {
-            return; // Already generated today, skip
+        console.log('Processing recurring transaction:', recurring.name, 'Type:', recurring.type, 'Category:', recurring.category);
+        
+        // Check if we already have a pending transaction for this recurring
+        const existingPending = transactions.find(t => 
+            t.recurringId === recurring.id && 
+            t.status === 'pending'
+        );
+        
+        // Only generate if we don't have a pending transaction
+        if (existingPending) {
+            console.log('Skipping', recurring.name, '- already has pending transaction');
+            return; // Already has a pending transaction, skip
         }
         
         // Get the next due date for this recurring transaction
         const nextDueDate = parseDate(recurring.nextDueDate);
+        console.log('Next due date for', recurring.name, ':', nextDueDate, 'Current date:', currentDate);
         
         // Only generate if the transaction is due today or overdue
+        if (nextDueDate && nextDueDate <= currentDate) {
+            console.log('Transaction is due - will generate pending transaction');
+        } else {
+            console.log('Transaction is not due yet - skipping');
+        }
+        
         if (nextDueDate && nextDueDate <= currentDate) {
             // Check if we already have a transaction for this date (pending or confirmed)
             const existingTransaction = transactions.find(t => 
@@ -2453,9 +2468,6 @@ function generateRecurringTransactions() {
                 }
             }
         }
-        
-        // Mark as generated today
-        recurring.lastGeneratedDate = today;
     });
     
     saveData();
@@ -2559,6 +2571,8 @@ function updatePendingRecurringDisplay() {
     console.log('Filtered pending transactions:', pendingTransactions);
     console.log('Income pending transactions:', pendingTransactions.filter(t => t.type === 'income'));
     console.log('Expense pending transactions:', pendingTransactions.filter(t => t.type === 'expense'));
+    console.log('Bill pending transactions:', pendingTransactions.filter(t => t.category === 'bills'));
+    console.log('All recurring transactions in settings:', settings.recurringTransactions);
     
     if (pendingTransactions.length > 0) {
         pendingSection.style.display = 'block';
